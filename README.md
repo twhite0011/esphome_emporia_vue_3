@@ -44,3 +44,22 @@ This provides practical whole-home estimates and per-leg balancing visibility, b
 
 ## Credits
 - YAML template and setup guidance adapted from: https://emporia-vue-local.github.io/docs/tutorial/intro/
+
+## Secret Safety
+- Keep credentials in `secrets.yaml` and reference them via `!secret` in `emporia.yaml`.
+- `.gitignore` excludes local secret files by default.
+
+### Pre-commit Secret Scan
+This repo includes a local pre-commit hook at `.githooks/pre-commit` that blocks likely secrets in staged changes.
+
+Enable it once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+If you intentionally commit non-secret test data that matches patterns, bypass once:
+
+```bash
+SKIP_SECRET_SCAN=1 git commit -m "..."
+```

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${SKIP_SECRET_SCAN:-}" == "1" ]]; then
+  exit 0
+fi
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "$script_dir/.." && pwd)"
+cd "$repo_root"
+
+# Scan only newly added lines in staged changes.
+added_lines="$({ git diff --cached -U0 -- . || true; } | sed -n 's/^+//p' | grep -v '^+++' || true)"
+
+[[ -z "$added_lines" ]] && exit 0
+
+regexes=(
+  'AKIA[0-9A-Z]{16}'
+  'ASIA[0-9A-Z]{16}'
+  'gh[pousr]_[A-Za-z0-9_]{20,}'
+  'github_pat_[A-Za-z0-9_]{20,}'
+  'xox[baprs]-[A-Za-z0-9-]{10,}'
+  'sk-[A-Za-z0-9]{20,}'
+  '-----BEGIN (RSA|EC|OPENSSH|DSA|PGP) PRIVATE KEY-----'
+  'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'
+  '(api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|passwd|pwd|private[_-]?key|appskey|nwkskey|app[_-]?key|nwk[_-]?key|dev[_-]?eui|app[_-]?eui)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"'[:space:]]{6,}["'"'"']'
+)
+
+for re in "${regexes[@]}"; do
+  if printf '%s\n' "$added_lines" | grep -E -n -i "$re" >/tmp/pre_commit_secret_hits.txt; then
+    echo "[pre-commit] blocked: possible secret detected in staged changes" >&2
+    cat /tmp/pre_commit_secret_hits.txt >&2
+    echo "Use !secret references (ESPHome) or rotate and remove literals before committing." >&2
+    echo "Set SKIP_SECRET_SCAN=1 only for intentional non-secret test data." >&2
+    exit 1
+  fi
+done
+
+exit 0

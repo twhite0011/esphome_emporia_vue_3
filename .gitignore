@@ -1,0 +1,6 @@
+# ESPHome local secrets
+secrets.yaml
+*.secrets.yaml
+
+# Optional local secret scan state
+.secrets.baseline
