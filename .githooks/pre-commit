@@ -27,7 +27,7 @@ regexes=(
 )
 
 for re in "${regexes[@]}"; do
-  if printf '%s\n' "$added_lines" | grep -E -n -i "$re" >/tmp/pre_commit_secret_hits.txt; then
+  if printf '%s\n' "$added_lines" | grep -E -n -i -- "$re" >/tmp/pre_commit_secret_hits.txt; then
     echo "[pre-commit] blocked: possible secret detected in staged changes" >&2
     cat /tmp/pre_commit_secret_hits.txt >&2
     echo "Use !secret references (ESPHome) or rotate and remove literals before committing." >&2
