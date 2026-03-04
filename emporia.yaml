@@ -49,10 +49,6 @@ preferences:
 #  on_disconnect:
 #    - light.turn_off: wifi_led
 
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  #ap:
-  #  ssid: "Home-Panel Fallback Hotspot"
-
 #captive_portal:
 
 light:
