@@ -49,6 +49,11 @@ preferences:
 #  on_disconnect:
 #    - light.turn_off: wifi_led
 
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  #ap:
+  #  ssid: "Home-Panel Fallback Hotspot"
+  #  password: "qpDATRdwsCF4"
+
 #captive_portal:
 
 light:
@@ -82,10 +87,10 @@ ethernet:
   clk:
     mode: CLK_EXT_IN
     pin: 0
-  #on_connect:
-  #  - light.turn_on: ethernet_led
-  #on_disconnect:
-  #  - light.turn_off: ethernet_led
+  on_connect:
+    - light.turn_on: ethernet_led
+  on_disconnect:
+    - light.turn_off: ethernet_led
 
 substitutions:
   leg_1: "Phase A"
@@ -102,8 +107,8 @@ substitutions:
   cir_9: "Circuit 9"
   cir_10: "Circuit 10"
   cir_11: "Circuit 11"
-  cir_12: "Circuit 12"
-  cir_13: "Circuit 13"
+  #cir_12: "Circuit 12"
+  #cir_13: "Circuit 13"
   #cir_14: "Circuit 14"
   #cir_15: "Circuit 15"
   #cir_16: "Circuit 16"
@@ -185,8 +190,8 @@ sensor:
       - { phase_id: phase_b, input:  "9", power: { id:  cir9, filters: [ *neg, *kw_scale ] } } # bathroom
       - { phase_id: phase_a, input: "10", power: { id: cir10, filters: [ *neg, *kw_scale ] } } # heater/attic
       - { phase_id: phase_b, input: "11", power: { id: cir11, filters: [ *neg, *kw_scale ] } } # south bed/liv
-      - { phase_id: phase_a, input: "12", power: { id: cir12, filters: [ *neg, *kw_scale ] } } # garage phase a
-      - { phase_id: phase_b, input: "13", power: { id: cir13, filters: [ *neg, *kw_scale ] } } # garage phase b
+      #- { phase_id: phase_a, input: "12", power: { id: cir12, filters: [ *neg, *kw_scale ] } } # garage phase a
+      #- { phase_id: phase_b, input: "13", power: { id: cir13, filters: [ *neg, *kw_scale ] } } # garage phase b
       #- { phase_id: phase_ab, input: "14", power: { id: cir14, filters: [ *neg, *kw_scale ] } }
       #- { phase_id: phase_ab, input: "15", power: { id: cir15, filters: [ *neg, *kw_scale ] } }
       #- { phase_id: phase_ab, input: "16", power: { id: cir16, filters: [ *neg, *kw_scale ] } }
@@ -212,15 +217,15 @@ sensor:
   - { platform: copy, name:  "${cir_9} Power", source_id:  cir9, filters: *throttle_avg }
   - { platform: copy, name: "${cir_10} Power", source_id: cir10, filters: *throttle_avg }
   - { platform: copy, name: "${cir_11} Power", source_id: cir11, filters: *throttle_avg }
-  - { platform: copy, name: "${cir_12} Power", source_id: cir12, filters: *throttle_avg }
-  - { platform: copy, name: "${cir_13} Power", source_id: cir13, filters: *throttle_avg }
+  #- { platform: copy, name: "${cir_12} Power", source_id: cir12, filters: *throttle_avg }
+  #- { platform: copy, name: "${cir_13} Power", source_id: cir13, filters: *throttle_avg }
   #- { platform: copy, name: "${cir_14} Power", source_id: cir14, filters: *throttle_avg }
   #- { platform: copy, name: "${cir_15} Power", source_id: cir15, filters: *throttle_avg }
   #- { platform: copy, name: "${cir_16} Power", source_id: cir16, filters: *throttle_avg }
 
   - platform: template
     name: "Total Power"
-    lambda: return id(cir1).state + id(cir2).state + id(cir3).state + id(cir4).state + id(cir5).state + id(cir6).state + id(cir7).state + id(cir8).state + id(cir9).state + id(cir10).state + id(cir11).state + id(cir12).state + id(cir13).state;;
+    lambda: return id(cir1).state + id(cir2).state + id(cir3).state + id(cir4).state + id(cir5).state + id(cir6).state + id(cir7).state + id(cir8).state + id(cir9).state + id(cir10).state + id(cir11).state;
     update_interval: never   # will be updated after all power sensors update via on_update trigger
     id: total_power
     device_class: power
@@ -228,7 +233,7 @@ sensor:
     unit_of_measurement: "W"
   - platform: template
     name: "Phase A Power"
-    lambda: return id(cir1).state + id(cir3).state + id(cir4).state + id(cir6).state + id(cir8).state + id(cir10).state + id(cir12).state;
+    lambda: return id(cir1).state + id(cir3).state + id(cir4).state + id(cir6).state + id(cir8).state + id(cir10).state;
     update_interval: never
     id: phase_a_power
     device_class: power
@@ -236,7 +241,7 @@ sensor:
     unit_of_measurement: "W"
   - platform: template
     name: "Phase B Power"
-    lambda: return id(cir2).state + id(cir5).state + id(cir7).state + id(cir9).state + id(cir11).state + id(cir13).state;
+    lambda: return id(cir2).state + id(cir5).state + id(cir7).state + id(cir9).state + id(cir11).state;
     update_interval: never
     id: phase_b_power
     device_class: power
@@ -261,8 +266,8 @@ sensor:
   - { power_id:  cir9, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_9} Daily Energy", filters: *throttle_time }
   - { power_id: cir10, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_10} Daily Energy", filters: *throttle_time }
   - { power_id: cir11, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_11} Daily Energy", filters: *throttle_time }
-  - { power_id: cir12, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_12} Daily Energy", filters: *throttle_time }
-  - { power_id: cir13, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_13} Daily Energy", filters: *throttle_time }
+  #- { power_id: cir12, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_12} Daily Energy", filters: *throttle_time }
+  #- { power_id: cir13, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_13} Daily Energy", filters: *throttle_time }
   #- { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_14} Daily Energy", filters: *throttle_time }
   #- { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_15} Daily Energy", filters: *throttle_time }
   #- { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_16} Daily Energy", filters: *throttle_time }
